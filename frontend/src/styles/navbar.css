@@ -1,0 +1,55 @@
+/* src/styles/navbar.css */
+.bg-body-tertiary {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 0 1rem !important;
+  z-index: 3 !important;
+}
+
+.nav-link {
+  color: #777777 !important;
+}
+
+.nav-link:hover {
+  color: #9c6a42 !important;
+}
+
+.dropdown-toggle {
+  align-items: center;
+}
+
+.custom-dropdown-button .btn-outline-secondary::before {
+  transition: background-color 0.3s ease;
+  color: #9c6a42;
+  width: auto;
+}
+
+.custom-dropdown-button .btn-outline-secondary:hover {
+  background-color: #9c6a42;
+  color: #fff;
+}
+
+#dropdown-basic-button ::after {
+  background-color: #9c6a42;
+  color: #fff;
+}
+
+.custom-dropdown-button .dropdown-toggle {
+  background-color: #f8f9fa;
+  border-color: #9c6a42;
+}
+
+.justify-content-center {
+  gap: 1rem 6rem !important;
+}
+
+.d-flex {
+  align-items: center;
+  flex-direction: row;
+}
+
+.login-btn {
+  color: #9c6a42 !important;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+}
