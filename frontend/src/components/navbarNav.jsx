@@ -67,9 +67,7 @@ function NavbarNav() {
                 <Nav.Link as={Link} to="/menu">
                   Menu
                 </Nav.Link>
-                <Nav.Link href="#trackOrder" onClick={openTrackOrder}>
-                  Track Order
-                </Nav.Link>
+                <Nav.Link onClick={openTrackOrder}>Track Order</Nav.Link>
               </Nav>
               <div className="d-flex justify-content-end gap-4">
                 {!isLoggedIn ? (
@@ -111,6 +109,7 @@ function NavbarNav() {
           </Navbar.Offcanvas>
         </Container>
       </Navbar>
+      {/* Animasi TrackOrder */}
       <TrackOrder isOpen={isTrackOrderOpen} onClose={closeTrackOrder} />
     </>
   );
