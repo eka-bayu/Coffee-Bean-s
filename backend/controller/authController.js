@@ -48,7 +48,7 @@ const forgotPassword = async (req, res) => {
     // Send email logic here
     await sendPasswordResetEmail(
       email,
-      `http://localhost:3000/reset-password/${token}`
+      `https://coffee-bean-s.vercel.app/reset-password/${token}`
     );
 
     res.status(200).json({ message: "Password reset email sent." });
