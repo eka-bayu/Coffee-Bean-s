@@ -39,6 +39,29 @@ const getUserEmailByToken = async (token) => {
   }
 };
 
+// Middleware untuk autentikasi
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      console.error("Token verification failed:", err);
+      return res.sendStatus(403); // Forbidden
+    }
+    req.user = user;
+    next();
+  });
+};
+
+// Authentication token
+app.use(authenticateToken);
+
 // Route for getting user email by token
 app.get("/api/auth/get-email/:token", async (req, res) => {
   try {
@@ -86,8 +109,7 @@ app.post("/api/auth/login", async (req, res) => {
     const { email, password } = req.body;
 
     // Search users by email
-    const user = await getUserByEmail(email);
-
+    const user = await knex("users").where({ email }).first();
     if (!user) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
@@ -100,12 +122,24 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     // Creating a JWT token
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
 
     // Return the token to the user
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+      },
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
@@ -115,36 +149,64 @@ app.post("/api/auth/login", async (req, res) => {
 // Create order
 app.post("/api/order", async (req, res) => {
   try {
-    console.log(req.body);
-    await createOrder(req.body);
+    console.log("Received order data:", req.body);
+
+    const orderData = {
+      ...req.body,
+      user_id: req.user ? req.user.id : null,
+    };
+
+    await createOrder(orderData);
     res.status(201).json({ message: "Order created" });
   } catch (error) {
-    console.error(error);
+    console.error("Error creating order:", error);
     res.status(500).json({ message: "Error creating order", error });
   }
 });
 
-// Get all order
-app.get("/api/order", async (req, res) => {
+// Get all orders
+app.get("/api/orders", async (req, res) => {
+  const userId = req.user ? req.user.id : null;
+  const isLoggedIn = Boolean(userId);
+
   try {
-    const orders = await getAllOrders();
-    res.status(200).json(orders);
+    const orders = await getAllOrders(isLoggedIn, userId);
+    res.json(orders);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error fetching orders", error });
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
 // Get order by ID
 app.get("/api/order/:id", async (req, res) => {
+  const userId = req.user ? req.user.id : null;
+  const isLoggedIn = Boolean(userId);
+
+  console.log("User ID:", userId);
   try {
     const order = await getOrderById(req.params.id);
+
     if (order) {
-      res.status(200).json(order);
+      console.log("Order User ID:", order.user_id);
+
+      // Logic for check if the order belongs to the logged-in user or if it's a guest order
+      if (order.user_id === userId || (!isLoggedIn && order.user_id === null)) {
+        res.status(200).json(order);
+      } else {
+        console.log("Authorization failed: ", {
+          order_user_id: order.user_id,
+          logged_in_user_id: userId,
+        });
+        res
+          .status(403)
+          .json({ message: "You are not authorized to view this order" });
+      }
     } else {
       res.status(404).json({ message: "Order not found" });
     }
   } catch (error) {
+    console.error("Error fetching order:", error);
     res.status(500).json({ message: "Error fetching order", error });
   }
 });

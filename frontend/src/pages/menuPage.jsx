@@ -5,11 +5,16 @@ import Navbar from "../components/navbarNav";
 import MenuItem from "../components/menuItems";
 import menus from "../components/menus";
 import "../styles/menuPage.css";
+import { useAuth } from "../context/authContext";
 
 const MenuPage = () => {
   const [order, setOrder] = useState({});
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("All");
+
+  // Fetching user info using the custom hook
+  const { isLoggedIn, user } = useAuth();
+  console.log("Is logged in:", isLoggedIn, "User:", user);
 
   const addToOrder = (item) => {
     setOrder((prevOrder) => {
@@ -22,24 +27,24 @@ const MenuPage = () => {
   };
 
   const handleQuantityChange = (itemName, newQuantity) => {
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      [itemName]: {
-        ...prevOrder[itemName],
-        quantity: newQuantity,
-      },
-    }));
+    if (newQuantity === 0) {
+      removeFromOrder(itemName);
+    } else {
+      setOrder((prevOrder) => ({
+        ...prevOrder,
+        [itemName]: {
+          ...prevOrder[itemName],
+          quantity: newQuantity,
+        },
+      }));
+    }
   };
-
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   console.log("Order placed:", order);
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const now = new Date();
     const orderId = `ORD-${now.getTime()}`;
+
     const orderData = {
       id: orderId,
       date: now.toLocaleDateString(),
@@ -53,10 +58,27 @@ const MenuPage = () => {
         (total, [_, { quantity, price }]) => total + quantity * price,
         0
       ),
+      user_id: isLoggedIn ? user?.id : null,
     };
 
+    console.log("Order data:", orderData);
+
+    const token = localStorage.getItem("token");
+
     try {
-      await axios.post("http://localhost:3001/api/order", orderData);
+      // Mengirim permintaan POST untuk membuat pesanan dengan header Authorization
+      const response = await axios.post(
+        "http://localhost:3001/api/order",
+        orderData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Order created successfully:", response.data);
+
+      // Navigasi setelah sukses
       navigate(`/order/${orderId}`, { state: { orderData } });
     } catch (error) {
       console.error("Error placing order", error);
@@ -143,7 +165,7 @@ const MenuPage = () => {
                       onClick={() =>
                         handleQuantityChange(
                           itemName,
-                          Math.max(quantity - 1, 1)
+                          Math.max(quantity - 1, 0)
                         )
                       }
                     >

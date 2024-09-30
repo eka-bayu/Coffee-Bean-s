@@ -16,19 +16,26 @@ const LoginPage = () => {
     event.preventDefault();
     try {
       setError("");
+      // Retrieve the token from localStorage (if necessary; usually not needed at login)
+      const token = localStorage.getItem("token");
+
       const response = await axios.post(
         "http://localhost:3001/api/auth/login",
         {
           email,
           password,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
-      const { token } = response.data;
-      localStorage.setItem("token", token);
+      const { token: newToken, user } = response.data;
+      localStorage.setItem("token", newToken);
 
-      auth.login(token);
-
+      auth.login(user);
       navigate("/", { replace: true });
     } catch (error) {
       console.error("Login failed:", error);
@@ -48,8 +55,7 @@ const LoginPage = () => {
             <p className="loginTxt">
               Please login first for your coffee experience
             </p>
-            {error && <Alert variant="danger">{error}</Alert>}{" "}
-            {/* Display error alert */}
+            {error && <Alert variant="danger">{error}</Alert>}
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail" className="mb-3">
                 <Form.Label>Email address</Form.Label>
@@ -57,7 +63,7 @@ const LoginPage = () => {
                   type="email"
                   placeholder="Your email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)} // Update email state
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </Form.Group>
@@ -67,7 +73,7 @@ const LoginPage = () => {
                   type="password"
                   placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)} // Update password state
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </Form.Group>
@@ -102,7 +108,7 @@ const LoginPage = () => {
                   backgroundColor: "#ffffff",
                   borderColor: "#6e4635",
                 }}
-                onClick={() => navigate("/")} // Guest login button
+                onClick={() => navigate("/")}
               >
                 Login as Guest
               </Button>

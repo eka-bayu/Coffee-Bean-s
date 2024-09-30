@@ -9,7 +9,6 @@ const OrderPage = () => {
   const navigate = useNavigate();
   const { orderData } = location.state || {};
 
-  // Fungsi untuk menyalin Order ID ke clipboard
   const handleCopyClick = () => {
     if (orderData?.id) {
       navigator.clipboard.writeText(orderData.id);
@@ -17,7 +16,6 @@ const OrderPage = () => {
     }
   };
 
-  // Fungsi untuk kembali ke halaman utama
   const handleBackToHome = () => {
     navigate("/");
   };

@@ -40,7 +40,7 @@ const ResetPassword = () => {
       const response = await axios.post(
         "http://localhost:3001/api/auth/reset-password",
         {
-          email: userEmail, // Use the fetched email
+          email: userEmail,
           token: token,
           newPassword: password,
         }

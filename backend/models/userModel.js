@@ -13,7 +13,7 @@ const createUser = async ({ username, email, password, phone }) => {
         phone,
       })
       .returning("*");
-    return newUser; // Return the new user
+    return newUser;
   } catch (error) {
     console.error("Error creating user:", error.message);
     throw new Error("Error creating user: " + error.message);
@@ -24,7 +24,7 @@ const createUser = async ({ username, email, password, phone }) => {
 const findUserByEmail = async (email) => {
   try {
     const user = await knex("users").where({ email }).first();
-    return user; // Return the user if found
+    return user;
   } catch (error) {
     console.error("Database query error:", error.message);
     throw new Error("Error fetching user by email: " + error.message);
@@ -32,7 +32,7 @@ const findUserByEmail = async (email) => {
 };
 
 const getUserByEmail = async (email) => {
-  console.log("Searching for user with email:", email); // Log the email
+  console.log("Searching for user with email:", email);
   try {
     const user = await findUserByEmail(email);
     return user;
